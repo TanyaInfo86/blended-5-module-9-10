@@ -8,6 +8,7 @@ const input = document.querySelector(".input-js");
 const btn = document.querySelector(".btn-add");
 const list = document.querySelector(".todo-list");
 btn.addEventListener("click", addTodo);
+list.addEventListener("click", toggleStatus);
 
 export const buttonUpdate =
   '<button type="button" class="btn-update" ></button>';
@@ -67,4 +68,29 @@ function reloadPage() {
 
 if (lsData !== null) {
   reloadPage();
+}
+
+function toggleStatus(e) {
+  if (e.target.nodeName !== "LI") return;
+  if (e.target.classList.contains("todo")) {
+    e.target.classList.replace("todo", "complete")
+    e.target.lastElementChild.remove()
+    e.target.insertAdjacentHTML("beforeend", buttonDelete);
+  } else {
+    e.target.classList.replace("complete", "todo")
+    e.target.lastElementChild.remove()
+    e.target.insertAdjacentHTML("beforeend", buttonUpdate);
+  }
+  updateStatusLS(e.target)
+}
+
+function updateStatusLS(el) {
+  const data = loadFromLS(KEY)
+  const newStatus = data.map(todo => {
+    if (todo.id === +el.id) {
+      todo.status = el.classList[0]
+    }
+    return todo
+  })
+  localStorage.setItem(KEY, JSON.stringify(newStatus));
 }

@@ -1,14 +1,18 @@
 import iziToast from "izitoast";
 import "izitoast/dist/css/iziToast.min.css";
+import * as basicLightbox from "basiclightbox";
+import "basiclightbox/dist/basicLightbox.min.css";
 
 const KEY = "todo";
 const lsData = loadFromLS(KEY);
+let instance = null;
 
 const input = document.querySelector(".input-js");
 const btn = document.querySelector(".btn-add");
 const list = document.querySelector(".todo-list");
 btn.addEventListener("click", addTodo);
 list.addEventListener("click", toggleStatus);
+list.addEventListener("click", openModal);
 
 export const buttonUpdate =
   '<button type="button" class="btn-update" ></button>';
@@ -73,24 +77,65 @@ if (lsData !== null) {
 function toggleStatus(e) {
   if (e.target.nodeName !== "LI") return;
   if (e.target.classList.contains("todo")) {
-    e.target.classList.replace("todo", "complete")
-    e.target.lastElementChild.remove()
+    e.target.classList.replace("todo", "complete");
+    e.target.lastElementChild.remove();
     e.target.insertAdjacentHTML("beforeend", buttonDelete);
   } else {
-    e.target.classList.replace("complete", "todo")
-    e.target.lastElementChild.remove()
+    e.target.classList.replace("complete", "todo");
+    e.target.lastElementChild.remove();
     e.target.insertAdjacentHTML("beforeend", buttonUpdate);
   }
-  updateStatusLS(e.target)
+  updateStatusLS(e.target);
 }
 
 function updateStatusLS(el) {
-  const data = loadFromLS(KEY)
-  const newStatus = data.map(todo => {
+  const data = loadFromLS(KEY);
+  const newStatus = data.map((todo) => {
     if (todo.id === +el.id) {
-      todo.status = el.classList[0]
+      todo.status = el.classList[0];
     }
-    return todo
-  })
+    return todo;
+  });
+  localStorage.setItem(KEY, JSON.stringify(newStatus));
+}
+
+function openModal(event) {
+  if (!event.target.classList.contains("btn-update")) {
+    return;
+  }
+  instance = basicLightbox.create(
+    `<div class="modal-container"><button type="button" class="btn-close-modal">X</button><input type="text" class="input-modal"/><button type="button" class="btn-update-modal" id="${event.target.parentNode.id}">Update todo</button></div>`,
+    {
+      closable: false,
+    }
+  );
+  instance.show();
+  const btnClose = document.querySelector(".btn-close-modal");
+  const modalInput = document.querySelector(".input-modal");
+  const btnUpdateModal = document.querySelector(".btn-update-modal");
+  btnClose.addEventListener("click", instance.close);
+  btnUpdateModal.addEventListener("click", (event) =>
+    updateModal(event, modalInput.value)
+  );
+}
+
+function updateModal(event, value) {
+  [...list.children].forEach((todo) => {
+    if (event.target.id === todo.id) {
+      todo.firstElementChild.textContent = value;
+    }
+  });
+  updateLS(event.target, value);
+  instance.close();
+}
+
+function updateLS(elem, value) {
+  const data = loadFromLS(KEY);
+  const newStatus = data.map((todo) => {
+    if (todo.id === +elem.id) {
+      todo.text = value;
+    }
+    return todo;
+  });
   localStorage.setItem(KEY, JSON.stringify(newStatus));
 }

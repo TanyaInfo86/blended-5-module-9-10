@@ -13,6 +13,7 @@ const list = document.querySelector(".todo-list");
 btn.addEventListener("click", addTodo);
 list.addEventListener("click", toggleStatus);
 list.addEventListener("click", openModal);
+list.addEventListener("click", deleteTodo);
 
 export const buttonUpdate =
   '<button type="button" class="btn-update" ></button>';
@@ -138,4 +139,18 @@ function updateLS(elem, value) {
     return todo;
   });
   localStorage.setItem(KEY, JSON.stringify(newStatus));
+}
+
+function deleteTodoFromLS(el) {
+    const data = loadFromLS(KEY);
+  const newStatus = data.filter((todo) => todo.id !== +el.id);
+  localStorage.setItem(KEY, JSON.stringify(newStatus));
+}
+
+function deleteTodo (event) {
+    if (!event.target.classList.contains("btn-delete")) {
+        return;
+      }
+      event.target.parentNode.remove();
+      deleteTodoFromLS(event.target.parentNode)
 }
